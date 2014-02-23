@@ -120,7 +120,7 @@
                 }
                 else {
                     // This route can not lead to the result, back 1 step
-                    var lastPt = route[route.length - 1][0];
+                    var lastPt = route[route.length - 1];
                     // We will pop a point whenever it has no more candidates.
                     console.assert(lastPt.c.length != 0);
                     grids[lastPt.y, lastPt.x] = lastPt.c.pop();
@@ -164,8 +164,10 @@
             var cell = cells[i];
             var x = i % 9;
             var y = Math.floor(i / 9);
-            cell.innerHTML = "" + grids[y][x];
-            //cell.value = "" + grids[y][x];
+            if (cell.innerText === "") {
+                cell.style.color = "blue";
+            }
+            cell.innerText = "" + grids[y][x];
         }
     }
 
