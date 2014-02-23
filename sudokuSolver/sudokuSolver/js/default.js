@@ -1,30 +1,76 @@
 ﻿(function () {
     //"use strict";
+    function getStyleRuleValue(style, selector, sheet) {
+        var sheets = typeof sheet !== 'undefined' ? [sheet] : document.styleSheets;
+        for (var i = 0, l = sheets.length; i < l; i++) {
+            var sheet = sheets[i];
+            if (!sheet.cssRules) { continue; }
+            for (var j = 0, k = sheet.cssRules.length; j < k; j++) {
+                var rule = sheet.cssRules[j];
+                if (rule.selectorText && rule.selectorText.split(',').indexOf(selector) !== -1) {
+                    return rule.style[style];
+                }
+            }
+        }
+        return null;
+    }
 
-    var cells = document.querySelectorAll("input");
-    console.log(cells);
+    var cells = document.querySelectorAll("#grid td");
+    for (var i = 0; i < cells.length; i++) {
+        cells[i].addEventListener("click", onCellClicked, false);
+    }
+
+    function onCellClicked(event) {
+        var cell = event.target;
+        cell.innerText = selectedNum;
+    }
+
+    var numBtns = document.querySelectorAll(".Numbertable td");
+
+    for (var i = 0; i < numBtns.length; i++) {
+        numBtns[i].addEventListener("click", numBtnClicked, false);
+    }
+
+
+    var unselectNumBtnColor = getStyleRuleValue("color", ".numBtn");
+    var selectedNum = "";
+    function numBtnClicked(event) {
+        for (var i = 0; i < numBtns.length; i++) {
+            numBtns[i].style.color = unselectNumBtnColor;
+        }
+        event.target.style.color = "red";
+        selectedNum = event.target.innerText;
+    }
+
     var nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
     var grids = [];
-    for (var i = 0; i < cells.length; i++) {
-        if (i % 9 === 0) {
-            grids.push([]);
-        }
-        var cell = cells[i].value;
-        var value = parseInt(cell);
-        var y = Math.floor(i / 9);
-
-        if (!isNaN(value) && value >= 0 && value <= 9) {
-            grids[y].push(value);
-        }
-        else {
-            //! @todo: error handler
-            grids[y].push(0);
-        }
-    }
-
     var route = [];
-    playGame();
+
+    var solveButton = document.querySelector("#solve");
+    solveButton.addEventListener("click", solveClickedHandler, false);
+
+    function solveClickedHandler() {
+        for (var i = 0; i < cells.length; i++) {
+            if (i % 9 === 0) {
+                grids.push([]);
+            }
+            var cell = cells[i].innerText;
+            var value = parseInt(cell);
+            var y = Math.floor(i / 9);
+
+            if (!isNaN(value) && value >= 0 && value <= 9) {
+                grids[y].push(value);
+            }
+            else {
+                //! @todo: error handler
+                grids[y].push(0);
+            }
+        }
+
+        playGame();
+    }
+    
     function playGame()
     {
         // Try to figure out as much as possible cells in the 1st round
@@ -118,8 +164,8 @@
             var cell = cells[i];
             var x = i % 9;
             var y = Math.floor(i / 9);
-            cell.value = "" + grids[y][x];
-            console.log(cell.innerHTML);
+            cell.innerHTML = "" + grids[y][x];
+            //cell.value = "" + grids[y][x];
         }
     }
 
