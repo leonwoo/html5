@@ -111,7 +111,7 @@
                 return;
             }
 
-            deadEnd = _.find(candidatesArr, function (n) { return n.c.length == 0; });
+            var deadEnd = _.find(candidatesArr, function (n) { return n.c.length == 0; }) !== undefined;
             if (deadEnd) {
                 // Back to the begin, there is no solution
                 if (route.length == 0) {
@@ -123,14 +123,11 @@
                     var lastPt = route[route.length - 1];
                     // We will pop a point whenever it has no more candidates.
                     console.assert(lastPt.c.length != 0);
-                    grids[lastPt.y, lastPt.x] = lastPt.c.pop();
+                    grids[lastPt.y][lastPt.x] = lastPt.c.pop();
                     if (lastPt.c.length == 0) {
-                        route.slice(0, route.length - 1);
-                        if (route.length == 0) {
-                            console.log("no solution");
-                            return;
-                        }
+                        route = route.slice(0, route.length - 1);
                     }
+                    continue;
                 }
             }
 
@@ -138,9 +135,6 @@
             grids[candidate.y][candidate.x] = candidate.c.pop();
             if (candidate.c.length != 0) {
                 route.push(candidate);
-            }
-            else {
-                console.assert(false, "logic error #2")
             }
         }
     }
