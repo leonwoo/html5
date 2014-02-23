@@ -32,13 +32,13 @@
     }
 
 
-    var unselectNumBtnColor = getStyleRuleValue("color", ".numBtn");
+    var unselectNumBtnColor = getStyleRuleValue("borderColor", ".numBtn");
     var selectedNum = "";
     function numBtnClicked(event) {
         for (var i = 0; i < numBtns.length; i++) {
-            numBtns[i].style.color = unselectNumBtnColor;
+            numBtns[i].style.borderColor = unselectNumBtnColor;
         }
-        event.target.style.color = "red";
+        event.target.style.borderColor = "red";
         selectedNum = event.target.innerText;
     }
 
