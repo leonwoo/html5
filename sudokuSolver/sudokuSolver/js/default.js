@@ -120,12 +120,28 @@
                 }
                 else {
                     // This route can not lead to the result, back 1 step
-                    var lastPt = route[route.length - 1];
-                    // We will pop a point whenever it has no more candidates.
-                    console.assert(lastPt.c.length != 0);
-                    grids[lastPt.y][lastPt.x] = lastPt.c.pop();
-                    if (lastPt.c.length == 0) {
-                        route = route.slice(0, route.length - 1);
+
+                    // First purge point without candidates
+                    var numPtToRemove = 0;
+                    for (var i = route.length - 1; i >= 0; i--) {
+                        var pt = route[i];
+                        if (pt.c.length == 0) {
+                            grids[pt.y][pt.x] = 0;
+                            numPtToRemove++;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+
+                    route = route.slice(0, route.length - numPtToRemove);
+                    if (route.length == 0) {
+                        console.log("no solution");
+                        return;
+                    }
+                    else {
+                        var lastPt = route[route.length - 1];
+                        grids[lastPt.y][lastPt.x] = lastPt.c.pop();
                     }
                     continue;
                 }
@@ -133,9 +149,7 @@
 
             var candidate = candidatesArr[0];
             grids[candidate.y][candidate.x] = candidate.c.pop();
-            if (candidate.c.length != 0) {
-                route.push(candidate);
-            }
+            route.push(candidate);
         }
     }
 
