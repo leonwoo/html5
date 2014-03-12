@@ -95,8 +95,38 @@
             sprite.r = 0;
             sprite.c = grid[0].length / 2;
         },
+        removeFullRow = function () {
+            var r, c, full, rowRemoved, result = [], newRow;
+            for (r = 0; r < grid.length; r++) {
+                full = true;
+                for (c = 0; c < grid[r].length; c++) {
+                    full = full && grid[r][c];
+                    if (!full) {
+                        break;
+                    }
+                }
+                if (!full) {
+                    newRow = [];
+                    for (c = 0; c < grid[r].length; c++) {
+                        newRow[c] = grid[r][c];
+                    }
+                    result.push(newRow);
+                }
+            }
+            rowRemoved = grid.length - result.length;
+            console.log(rowRemoved);
+            if (rowRemoved > 0) {
+                for (r = 0; r < rowRemoved; r++) {
+                    result.unshift(Array.apply(null, new Array(grid[0].length)).map(Number.prototype.valueOf, 0));    
+                }                
+                grid = result;
+            }
+
+            return rowRemoved;
+        },
+
         onUpdate = function () {
-            var r, m, c, cGrid, rGrid, full, fullRowCount;
+            var r, m, c, cGrid, rGrid;
             if (++updateTickCount % dropIntervalTick === 0) {
                 r = sprite.r;
                 r += 1;
@@ -111,26 +141,11 @@
                             cGrid = c + sprite.c;
                             if (m[r][c] !== 0) {
                                 grid[rGrid][cGrid] = m[r][c];
-                           }
+                            }
                         }
                     }
 
-                    fullRowCount = 0;
-                    for (r = sprite.r; r < sprite.r + m.length; r++) {
-                        full = true;
-                        for (c = 0; c < grid[r].length; c++) {
-                            full = full && grid[r][c];
-                            if (!full) {
-                                break;
-                            }
-                        }
-                        if (full) {
-                            fullRowCount++;
-                            for (c = 0; c < grid[r].length; c++) {
-                                grid[r][c] = 0;
-                            }
-                        }
-                    }
+                    removeFullRow();
 
                     generateBlock();
                 }
