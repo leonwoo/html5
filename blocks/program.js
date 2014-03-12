@@ -28,7 +28,7 @@
 
         blocks = {
             square: [[1, 1], [1, 1]],
-            stick: [1, 1, 1, 1], 
+            stick: [[1, 1, 1, 1]]
         },
 
         blockTypes = ["square", "stick"],
@@ -47,8 +47,8 @@
             for (r = 0; r < grid.length; r++) {
                 for (c = 0; c < grid[r].length; c++) {
                     if (grid[r][c] !== 0) {
-                        x = r * cell.width;
-                        y = c * cell.height;
+                        x = c * cell.width;
+                        y = r * cell.height;
                         surface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
                     }
                 }
@@ -77,9 +77,9 @@
             // First check the boundary
             if (r >= 0 && r + m.length <= grid.length && c >= 0 && c + m[0].length <= grid[0].length) {
                 for (y = 0; y < m.length; y++) {
-                    for (x = 0; x < m[0].length; x++) {
-                        rGrid = y + sprite.r;
-                        cGrid = x + sprite.c;
+                    for (x = 0; x < m[y].length; x++) {
+                        rGrid = y + r;
+                        cGrid = x + c;
                         if (grid[rGrid][cGrid] !== 0 && m[y][x] !== 0) {
                             return false;
                         }
@@ -89,14 +89,50 @@
             }
             return false;
         },
-
+        generateBlock = function () {
+            var index = Math.floor(Math.random() * blockTypes.length);
+            sprite.type = blockTypes[index];
+            sprite.r = 0;
+            sprite.c = grid[0].length / 2;
+        },
         onUpdate = function () {
-            var r;
-            if (updateTickCount % dropIntervalTick === 0) {
+            var r, m, c, cGrid, rGrid, full, fullRowCount;
+            if (++updateTickCount % dropIntervalTick === 0) {
                 r = sprite.r;
                 r += 1;
                 if (canGo(r, sprite.c)) {
                     sprite.r = r;
+                } else {
+                    // Reach ground, become part of grid and generate a new block
+                    m = blocks[sprite.type];
+                    for (r = 0; r < m.length; r++) {
+                        for (c = 0; c < m[r].length; c++) {
+                            rGrid = r + sprite.r;
+                            cGrid = c + sprite.c;
+                            if (m[r][c] !== 0) {
+                                grid[rGrid][cGrid] = m[r][c];
+                           }
+                        }
+                    }
+
+                    fullRowCount = 0;
+                    for (r = sprite.r; r < sprite.r + m.length; r++) {
+                        full = true;
+                        for (c = 0; c < grid[r].length; c++) {
+                            full = full && grid[r][c];
+                            if (!full) {
+                                break;
+                            }
+                        }
+                        if (full) {
+                            fullRowCount++;
+                            for (c = 0; c < grid[r].length; c++) {
+                                grid[r][c] = 0;
+                            }
+                        }
+                    }
+
+                    generateBlock();
                 }
             }
             render();
@@ -133,6 +169,7 @@
             }
         };
 
+    generateBlock();
     tile.addEventListener("load", onLoadTile, false);
     window.addEventListener("keydown", onKeyDown, false);
     tile.src = "block.png";
