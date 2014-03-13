@@ -1,5 +1,7 @@
 (function () {
     var stage = document.querySelector("#stage"),
+        panel = document.querySelector("#panel"),
+        panelSurface = panel.getContext("2d"),
         status = document.querySelector("#status"),
         surface = stage.getContext("2d"),
         tile = new Image(),
@@ -199,14 +201,31 @@
             }
             return false;
         },
+
+        renderPanel = function () {
+            var r, c, m, x, y;
+            m = blocks[sprite.type][sprite.z];
+            //panelSurface.clearRect(0, 0, panel.width, panel.height);
+            for (r = 0; r < m.length; r++) {
+                for (c = 0; c < m[r].length; c++) {
+                    if (m[r][c] !== 0) {
+                        x = c * cell.width;
+                        y = r * cell.height;
+                        panelSurface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                    }
+                }
+            }
+        },
         generateBlock = function () {
             var index = Math.floor(Math.random() * blockTypes.length);
             sprite.type = blockTypes[index];
             sprite.z = Math.floor(Math.random() * blocks[sprite.type].length);
             sprite.r = 0;
             sprite.c = grid[0].length / 2;
+            renderPanel();
             return canGo(sprite.r, sprite.c, sprite.z);
         },
+
         removeFullRows = function () {
             var r, c, full, rowRemoved, result = [], newRow;
             for (r = 0; r < grid.length; r++) {
@@ -274,6 +293,7 @@
             render();
         },
         onLoadTile = function () {
+            generateBlock();
             updateTimer = window.setInterval(onUpdate, updateInterval);
         },
         UP = 38,
@@ -307,7 +327,6 @@
             }
         };
 
-    generateBlock();
     tile.addEventListener("load", onLoadTile, false);
     window.addEventListener("keydown", onKeyDown, false);
     tile.src = "block.png";
