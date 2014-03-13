@@ -39,100 +39,100 @@
             stick:
                 [
                     [
-                        [1, 1, 1, 1]
+                        [2, 2, 2, 2]
                     ],
                     [
-                        [1],
-                        [1],
-                        [1],
-                        [1]
+                        [2],
+                        [2],
+                        [2],
+                        [2]
                     ]
                 ],
             capitalL:
                 [
                     [
-                        [0, 0, 1],
-                        [1, 1, 1]
+                        [0, 0, 3],
+                        [3, 3, 3]
                     ],
                     [
-                        [1, 0],
-                        [1, 0],
-                        [1, 1],
+                        [3, 0],
+                        [3, 0],
+                        [3, 3],
                     ],
                     [
-                        [1, 1, 1],
-                        [1, 0, 0]
+                        [3, 3, 3],
+                        [3, 0, 0]
                     ],
                     [
-                        [1, 1],
-                        [0, 1],
-                        [0, 1],
+                        [3, 3],
+                        [0, 3],
+                        [0, 3],
                     ],
                 ],
             capitalJ:
                 [
                     [
-                        [1, 1, 1],
-                        [0, 0, 1]
+                        [4, 4, 4],
+                        [0, 0, 4]
                     ],
                     [
-                        [0, 1],
-                        [0, 1],
-                        [1, 1],
+                        [0, 4],
+                        [0, 4],
+                        [4, 4],
                     ],
                     [
-                        [1, 0, 0],
-                        [1, 1, 1]
+                        [4, 0, 0],
+                        [4, 4, 4]
                     ],
                     [
-                        [1, 1],
-                        [1, 0],
-                        [1, 0],
+                        [4, 4],
+                        [4, 0],
+                        [4, 0],
                     ],
                 ],
             rStarter:
                 [
                     [
-                        [0, 1, 1],
-                        [1, 1, 0]
+                        [0, 5, 5],
+                        [5, 5, 0]
                     ],
                     [
-                        [1, 0],
-                        [1, 1],
-                        [0, 1],
+                        [5, 0],
+                        [5, 5],
+                        [0, 5],
                     ],
                 ],
             lStarter:
                 [
                     [
-                        [1, 1, 0],
-                        [0, 1, 1]
+                        [6, 6, 0],
+                        [0, 6, 6]
                     ],
                     [
-                        [0, 1],
-                        [1, 1],
-                        [1, 0],
+                        [0, 6],
+                        [6, 6],
+                        [6, 0],
                     ],
                 ],
             capitalT:
                 [
                     [
-                        [1, 1, 1],
-                        [0, 1, 0]
+                        [7, 7, 7],
+                        [0, 7, 0]
                     ],
                     [
-                        [1, 0],
-                        [1, 1],
-                        [1, 0],
+                        [7, 0],
+                        [7, 7],
+                        [7, 0],
                     ],
                     [
-                        [0, 1, 0],
-                        [1, 1, 1]
+                        [0, 7, 0],
+                        [7, 7, 7]
                     ],
                     [
-                        [0, 1],
-                        [1, 1],
-                        [0, 1],
+                        [0, 7],
+                        [7, 7],
+                        [0, 7],
                     ]
                 ],
         },
@@ -156,7 +156,7 @@
                     if (grid[r][c] !== 0) {
                         x = c * cell.width;
                         y = r * cell.height;
-                        surface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                        surface.drawImage(tile, grid[r][c] * cell.width - cell.width, 0, cell.width, cell.height, x, y, cell.width, cell.height);
                     }
                 }
             }
@@ -169,7 +169,7 @@
                     if (m[r][c] !== 0) {
                         x = (sprite.c + c) * cell.width;
                         y = (sprite.r + r) * cell.height;
-                        surface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                        surface.drawImage(tile, m[r][c] * cell.width - cell.width, 0, cell.width, cell.height, x, y, cell.width, cell.height);
                     }
                 }
             }
@@ -212,7 +212,7 @@
                     if (m[r][c] !== 0) {
                         x = c * cell.width;
                         y = r * cell.height;
-                        panelSurface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                        panelSurface.drawImage(tile, m[r][c] * cell.width - cell.width, 0, cell.width, cell.height, x, y, cell.width, cell.height);
                     }
                 }
             }
