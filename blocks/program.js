@@ -1,5 +1,6 @@
 (function () {
     var stage = document.querySelector("#stage"),
+        status = document.querySelector("#status"),
         surface = stage.getContext("2d"),
         tile = new Image(),
         cell = {
@@ -27,15 +28,119 @@
         ],
 
         blocks = {
-            square: [[1, 1], [1, 1]],
-            stick: [[1, 1, 1, 1]]
+            square:
+                [
+                    [
+                        [1, 1], [1, 1]
+                    ]
+                ],
+            stick:
+                [
+                    [
+                        [1, 1, 1, 1]
+                    ],
+                    [
+                        [1],
+                        [1],
+                        [1],
+                        [1]
+                    ]
+                ],
+            capitalL:
+                [
+                    [
+                        [0, 0, 1],
+                        [1, 1, 1]
+                    ],
+                    [
+                        [1, 0],
+                        [1, 0],
+                        [1, 1],
+                    ],
+                    [
+                        [1, 1, 1],
+                        [1, 0, 0]
+                    ],
+                    [
+                        [1, 1],
+                        [0, 1],
+                        [0, 1],
+                    ],
+                ],
+            capitalJ:
+                [
+                    [
+                        [1, 1, 1],
+                        [0, 0, 1]
+                    ],
+                    [
+                        [0, 1],
+                        [0, 1],
+                        [1, 1],
+                    ],
+                    [
+                        [1, 0, 0],
+                        [1, 1, 1]
+                    ],
+                    [
+                        [1, 1],
+                        [1, 0],
+                        [1, 0],
+                    ],
+                ],
+            rStarter:
+                [
+                    [
+                        [0, 1, 1],
+                        [1, 1, 0]
+                    ],
+                    [
+                        [1, 0],
+                        [1, 1],
+                        [0, 1],
+                    ],
+                ],
+            lStarter:
+                [
+                    [
+                        [1, 1, 0],
+                        [0, 1, 1]
+                    ],
+                    [
+                        [0, 1],
+                        [1, 1],
+                        [1, 0],
+                    ],
+                ],
+            capitalT:
+                [
+                    [
+                        [1, 1, 1],
+                        [0, 1, 0]
+                    ],
+                    [
+                        [1, 0],
+                        [1, 1],
+                        [1, 0],
+                    ],
+                    [
+                        [0, 1, 0],
+                        [1, 1, 1]
+                    ],
+                    [
+                        [0, 1],
+                        [1, 1],
+                        [0, 1],
+                    ]
+                ],
         },
 
-        blockTypes = ["square", "stick"],
-
+        blockTypes = ["square", "stick", "capitalL", "capitalJ", "lStarter", "rStarter", "capitalT"],
+        score = 0,
         sprite = {
             c: 0,
             r: 0,
+            z: 0,
             type: "square"
         },
         dropIntervalTick = 10,
@@ -56,12 +161,14 @@
         },
         drawSprite = function () {
             var c, r, x, y, m;
-            m = blocks[sprite.type];
+            m = blocks[sprite.type][sprite.z];
             for (r = 0; r < m.length; r++) {
                 for (c = 0; c < m[r].length; c++) {
-                    x = (sprite.c + c) * cell.width;
-                    y = (sprite.r + r) * cell.height;
-                    surface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                    if (m[r][c] !== 0) {
+                        x = (sprite.c + c) * cell.width;
+                        y = (sprite.r + r) * cell.height;
+                        surface.drawImage(tile, 0, 0, cell.width, cell.height, x, y, cell.width, cell.height);
+                    }
                 }
             }
         },
@@ -69,11 +176,14 @@
             surface.clearRect(0, 0, stage.width, stage.height);
             drawMap();
             drawSprite();
+
+            // show status
+            status.innerHTML = score;
         },
 
-        canGo = function (r, c) {
+        canGo = function (r, c, z) {
             var m, rGrid, cGrid, x, y;
-            m = blocks[sprite.type];
+            m = blocks[sprite.type][z];
             // First check the boundary
             if (r >= 0 && r + m.length <= grid.length && c >= 0 && c + m[0].length <= grid[0].length) {
                 for (y = 0; y < m.length; y++) {
@@ -92,10 +202,12 @@
         generateBlock = function () {
             var index = Math.floor(Math.random() * blockTypes.length);
             sprite.type = blockTypes[index];
+            sprite.z = Math.floor(Math.random() * blocks[sprite.type].length);
             sprite.r = 0;
             sprite.c = grid[0].length / 2;
+            return canGo(sprite.r, sprite.c, sprite.z);
         },
-        removeFullRow = function () {
+        removeFullRows = function () {
             var r, c, full, rowRemoved, result = [], newRow;
             for (r = 0; r < grid.length; r++) {
                 full = true;
@@ -117,24 +229,28 @@
             console.log(rowRemoved);
             if (rowRemoved > 0) {
                 for (r = 0; r < rowRemoved; r++) {
-                    result.unshift(Array.apply(null, new Array(grid[0].length)).map(Number.prototype.valueOf, 0));    
-                }                
+                    result.unshift(Array.apply(null, new Array(grid[0].length)).map(Number.prototype.valueOf, 0));
+                }
                 grid = result;
             }
 
             return rowRemoved;
         },
 
+        endGame = function () {
+            window.clearInterval(updateTimer);
+            status.innerHTML = "The End!";
+        },
         onUpdate = function () {
-            var r, m, c, cGrid, rGrid;
+            var r, m, c, cGrid, rGrid, rowRemoved;
             if (++updateTickCount % dropIntervalTick === 0) {
                 r = sprite.r;
                 r += 1;
-                if (canGo(r, sprite.c)) {
+                if (canGo(r, sprite.c, sprite.z)) {
                     sprite.r = r;
                 } else {
                     // Reach ground, become part of grid and generate a new block
-                    m = blocks[sprite.type];
+                    m = blocks[sprite.type][sprite.z];
                     for (r = 0; r < m.length; r++) {
                         for (c = 0; c < m[r].length; c++) {
                             rGrid = r + sprite.r;
@@ -145,9 +261,13 @@
                         }
                     }
 
-                    removeFullRow();
-
-                    generateBlock();
+                    rowRemoved = removeFullRows();
+                    if (rowRemoved > 0) {
+                        score += Math.pow(2, rowRemoved - 1);
+                    }
+                    if (!generateBlock()) {
+                        endGame();
+                    }
                 }
             }
             render();
@@ -160,12 +280,13 @@
         DOWN = 40,
         LEFT = 37,
         onKeyDown = function (event) {
-            var r, c;
+            var r, c, z;
             r = sprite.r;
             c = sprite.c;
+            z = sprite.z;
             switch (event.keyCode) {
             case UP:
-                r -= 1;
+                z = (z + 1) % blocks[sprite.type].length;
                 break;
             case RIGHT:
                 c += 1;
@@ -178,9 +299,10 @@
                 break;
             }
 
-            if (canGo(r, c)) {
+            if (canGo(r, c, z)) {
                 sprite.r = r;
                 sprite.c = c;
+                sprite.z = z;
             }
         };
 
