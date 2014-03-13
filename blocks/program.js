@@ -267,6 +267,7 @@
                     }
                     if (!generateBlock()) {
                         endGame();
+                        return;
                     }
                 }
             }
