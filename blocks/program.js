@@ -204,6 +204,7 @@
 
         renderPanel = function () {
             var r, c, m, x, y;
+            panelSurface.clearRect(0, 0, panel.width, panel.height);
             m = blocks[sprite.type][sprite.z];
             //panelSurface.clearRect(0, 0, panel.width, panel.height);
             for (r = 0; r < m.length; r++) {
