@@ -9,13 +9,6 @@
             dstY: 0,
             width: 0,
             height: 0,
-            visible: false,
-            show: function () {
-                this.visible = true;
-            },
-            hide: function () {
-                this.visible = false;
-            },
         },
         background = Object.create(sprite),
         cannon = Object.create(sprite),
@@ -31,6 +24,15 @@
         missile_v_ticks = 2,
         missle_step = 16,
         refresh_tick_count = 0,
+        remove = function (arr, item) {
+            var i;
+            for (i = arr.length - 1; i >= 0; i--) {
+                if (arr[i] === item) {
+                    arr.splice(i, 1);
+                }
+            }
+        },
+
         drawSprite = function (s) {
             surface.drawImage(tile, s.srcX, s.srcY, s.width, s.height, s.dstX, s.dstY, s.width, s.height);
         },
@@ -80,6 +82,7 @@
                     missles[i].dstY -= missle_step;
                     // Out of boundry
                     if (missles[i].dstY < 0) {
+                        remove(sprites, missles[i]);
                         missles.splice(i, 1);
                     }
                 }
@@ -94,7 +97,6 @@
             background.srcY = 32;
             background.width = stage.width;
             background.height = stage.height;
-            background.visible = true;
             sprites.push(background);
 
             // Init cannon
@@ -104,7 +106,6 @@
             cannon.height = 32;
             cannon.dstX = Math.floor((stage.width - cannon.width) / 2);
             cannon.dstY = stage.height - cannon.height;
-            cannon.visible = false;
             sprites.push(cannon);
 
             // Add keydown listener
