@@ -14,6 +14,7 @@
         cannon = Object.create(sprite),
         sprites = [],
         missles = [],
+        aliens = [],
         KEY_SPACE = 32,
         KEY_LEFT = 37,
         KEY_RIGHT = 39,
@@ -24,6 +25,21 @@
         missile_v_ticks = 2,
         missle_step = 16,
         refresh_tick_count = 0,
+        alien_enter_ticks = 20,
+
+        generateAlien = function () {
+            var alien = Object.create(sprite);
+            alien.srcX = 32;
+            alien.srcY = 0;
+            alien.width = 32;
+            alien.height = 32;
+            alien.dstX = Math.floor(Math.floor(stage.width / cannon_step) * Math.random());
+            alien.dstY = 0;
+
+            aliens.push(alien);
+            sprites.push(alien);
+        },
+
         remove = function (arr, item) {
             var i;
             for (i = arr.length - 1; i >= 0; i--) {
@@ -37,6 +53,7 @@
             surface.drawImage(tile, s.srcX, s.srcY, s.width, s.height, s.dstX, s.dstY, s.width, s.height);
         },
         render = function () {
+            surface.clearRect(0, 0, stage.width, stage.height);
             var i;
             for (i = 0; i < sprites.length; i++) {
                 drawSprite(sprites[i]);
@@ -75,6 +92,9 @@
             }
         },
 
+        detectCollision = function (a, b) {
+            
+        },
         onUpdateDisplay = function () {
             var i;
             if (++refresh_tick_count % missile_v_ticks === 0) {
@@ -86,8 +106,22 @@
                         missles.splice(i, 1);
                     }
                 }
+
+                for (i = aliens.length - 1; i >= 0; i--) {
+                    aliens[i].dstY += missle_step;
+                    // Out of boundry
+                    if (aliens[i].dstY > stage.height - aliens[i].height) {
+                        remove(sprites, aliens[i]);
+                        aliens.splice(i, 1);
+                    }
+                }
             }
-            console.log("Missles: " + missles.length);
+
+            if (refresh_tick_count % alien_enter_ticks === 0) {
+                generateAlien();
+            }
+
+            //console.log("Missles: " + missles.length);
             render();
         },
 
@@ -117,7 +151,7 @@
             render();
         };
 
-    tile.addEventListener("load", onTileLoaded, false);
+    tile.addEventListener("load", onTileLoaded, false);    
     tile.src = "alienArmada.png";
 
 }());
