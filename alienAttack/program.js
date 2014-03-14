@@ -9,6 +9,12 @@
             dstY: 0,
             width: 0,
             height: 0,
+            dstB : function () {
+                return this.dstY + this.height;
+            },
+            dstR : function () {
+                return this.dstX + this.width;
+            }
         },
         background = Object.create(sprite),
         cannon = Object.create(sprite),
@@ -93,8 +99,9 @@
         },
 
         detectCollision = function (a, b) {
-            
+            return !(a.dstX > b.dstR() || a.dstR() < b.dstX || a.dstY > b.dstB() || a.dstB() < b.dstY);
         },
+
         onUpdateDisplay = function () {
             var i;
             if (++refresh_tick_count % missile_v_ticks === 0) {
@@ -115,6 +122,8 @@
                         aliens.splice(i, 1);
                     }
                 }
+
+                
             }
 
             if (refresh_tick_count % alien_enter_ticks === 0) {
