@@ -136,12 +136,7 @@
                     ]
                 ],
         },
-        UP = 38,
-        RIGHT = 39,
-        DOWN = 40,
-        LEFT = 37,
-        NO_KEY = 0,
-        keyCode = NO_KEY,
+
         blockTypes = ["square", "stick", "capitalL", "capitalJ", "lStarter", "rStarter", "capitalT"],
         score = 0,
         sprite = {
@@ -150,9 +145,9 @@
             z: 0,
             type: "square"
         },
-        dropIntervalTick = 10,
+        dropIntervalTick = 20,
         updateTickCount = 0,
-        updateInterval = 120,
+        updateInterval = 20,
         updateTimer,
         drawMap = function () {
             var c, r, x, y;
@@ -185,26 +180,28 @@
             drawSprite();
 
             // show status
-            status.innerHTML = score;
+            status.innerHTML = "Score: " + score;
         },
 
         canGo = function (r, c, z) {
             var m, rGrid, cGrid, x, y;
             m = blocks[sprite.type][z];
             // First check the boundary
-            if (r >= 0 && r + m.length <= grid.length && c >= 0 && c + m[0].length <= grid[0].length) {
-                for (y = 0; y < m.length; y++) {
-                    for (x = 0; x < m[y].length; x++) {
-                        rGrid = y + r;
-                        cGrid = x + c;
-                        if (grid[rGrid][cGrid] !== 0 && m[y][x] !== 0) {
+            for (y = 0; y < m.length; y++) {
+                for (x = 0; x < m[y].length; x++) {
+                    rGrid = y + r;
+                    cGrid = x + c;
+                    if (m[y][x] !== 0) {
+                        if (rGrid < 0 || rGrid >= grid.length || cGrid < 0 || cGrid >= grid[0].length) {
+                            return false;
+                        }
+                        if (grid[rGrid][cGrid] !== 0) {
                             return false;
                         }
                     }
                 }
-                return true;
             }
-            return false;
+            return true;
         },
 
         renderPanel = function () {
@@ -266,48 +263,7 @@
             window.clearInterval(updateTimer);
             status.innerHTML = "The End!";
         },
-
-        proccessKey = function () {
-            var r, c, z;
-            r = sprite.r;
-            c = sprite.c;
-            z = sprite.z;
-            switch (keyCode) {
-            case UP:
-                z = (z + 1) % blocks[sprite.type].length;
-                break;
-            case RIGHT:
-                c += 1;
-                break;
-            case DOWN:
-                r += 1;
-                break;
-            case LEFT:
-                c -= 1;
-                break;
-            }
-
-            if (canGo(r, c, z)) {
-                sprite.r = r;
-                sprite.c = c;
-                sprite.z = z;
-            }
-        },
-
-        onKeyDown = function (event) {
-            // Only allow one key press
-            keyCode = NO_KEY;
-            if (event.keyCode === UP || event.keyCode === RIGHT || event.keyCode === DOWN || event.keyCode === LEFT) {
-                keyCode = event.keyCode;
-            }
-        },
-
-        onKeyUp = function (event) {
-            keyCode = NO_KEY;
-        },
-
         onUpdate = function () {
-            proccessKey();
             var r, m, c, cGrid, rGrid, rowRemoved;
             if (++updateTickCount % dropIntervalTick === 0) {
                 r = sprite.r;
@@ -329,7 +285,7 @@
 
                     rowRemoved = removeFullRows();
                     if (rowRemoved > 0) {
-                        score += Math.pow(2, rowRemoved - 1);
+                        score += Math.pow(2, rowRemoved) - 1;
                     }
                     if (!generateBlock()) {
                         endGame();
@@ -342,11 +298,40 @@
         onLoadTile = function () {
             generateBlock();
             updateTimer = window.setInterval(onUpdate, updateInterval);
+        },
+        UP = 38,
+        RIGHT = 39,
+        DOWN = 40,
+        LEFT = 37,
+        onKeyDown = function (event) {
+            var r, c, z;
+            r = sprite.r;
+            c = sprite.c;
+            z = sprite.z;
+            switch (event.keyCode) {
+            case UP:
+                z = (z + 1) % blocks[sprite.type].length;
+                break;
+            case RIGHT:
+                c += 1;
+                break;
+            case DOWN:
+                r += 1;
+                break;
+            case LEFT:
+                c -= 1;
+                break;
+            }
+
+            if (canGo(r, c, z)) {
+                sprite.r = r;
+                sprite.c = c;
+                sprite.z = z;
+            }
         };
 
     tile.addEventListener("load", onLoadTile, false);
     window.addEventListener("keydown", onKeyDown, false);
-    window.addEventListener("keyup", onKeyUp, false);
     tile.src = "block.png";
 
 
