@@ -1,5 +1,6 @@
 (function () {
     var stage = document.querySelector("#stage"),
+        info = document.querySelector("#info"),
         surface = stage.getContext("2d"),
         tile = new Image(),
         sprite = {
@@ -29,6 +30,7 @@
         refreshTimer,
         refreshTickCount = 0,
         alienEnterTicks = 20,
+        score = 0,
 
         remove = function (arr, item) {
             var i;
@@ -68,6 +70,9 @@
             var i;
             surface.clearRect(0, 0, stage.width, stage.height);
             drawSprite(background);
+
+            info.innerHTML = "Score: " + score;
+
             drawSprite(cannon);
 
             for (i = 0; i < blasts.length; i++) {
@@ -147,7 +152,7 @@
             if (refreshTickCount % alienEnterTicks === 0) {
                 generateAlien();
             }
-            
+
             refreshTickCount += 1;
             for (i = 0; i < blasts.length; i++) {
                 blasts[i].onTick();
@@ -165,6 +170,7 @@
             for (i = missiles.length - 1; i >= 0; i--) {
                 for (j = aliens.length - 1; j >= 0; j--) {
                     if (detectCollision(missiles[i], aliens[j])) {
+                        score += 1;
                         hitAlien(aliens[j]);
                         aliens.splice(j, 1);
                         missiles.splice(i, 1);
