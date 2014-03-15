@@ -20,12 +20,14 @@
         background = Object.create(sprite),
         cannon = Object.create(sprite),
         blasts = [],
+        missileBase = Object.create(sprite),
         missiles = [],
+        alienBase = Object.create(sprite),
         aliens = [],
+        blastBase = Object.create(sprite),
         KEY_SPACE = 32,
         KEY_LEFT = 37,
         KEY_RIGHT = 39,
-        cannon_step = 16,
         refreshInterval = 120,
         refreshTimer,
         refreshTickCount = 0,
@@ -42,24 +44,8 @@
         },
 
         generateAlien = function () {
-            var alien = Object.create(sprite);
-            alien.srcX = 32;
-            alien.srcY = 0;
-            alien.width = 32;
-            alien.height = 32;
+            var alien = Object.create(alienBase);
             alien.dstX = Math.floor((stage.width - alien.width) * Math.random());
-            alien.dstY = 0;
-            alien.onTick = function () {
-                var alienStep = 16, alienVTicks = 2;
-                if (refreshTickCount % alienVTicks === 0) {
-                    alien.dstY += alienStep;
-                    // Out of boundry
-                    if (alien.dstY > stage.height) {
-                        remove(aliens, alien);
-                    }
-                }
-            };
-
             aliens.push(alien);
         },
 
@@ -89,23 +75,9 @@
         },
 
         fire = function () {
-            var missile = Object.create(sprite);
-            missile.srcX = 3 * 32;
-            missile.srcY = 0;
-            missile.width = 16;
-            missile.height = 16;
+            var missile = Object.create(missileBase);
             missile.dstX = cannon.dstX + Math.floor(cannon.width) / 2 - Math.floor(missile.width / 2);
             missile.dstY = cannon.dstY - missile.height;
-            missile.onTick = function () {
-                var vTicks = 2, step = 16;
-                if (refreshTickCount % vTicks === 0) {
-                    missile.dstY -= step;
-                    // Out of boundry                    
-                    if (missile.dstY < 0) {
-                        remove(missiles, missile);
-                    }
-                }
-            };
 
             // Use unshift instead of push to keep the early missle at the end of the array, since we normally do the backward search for removing
             missiles.unshift(missile);
@@ -115,10 +87,10 @@
             var x;
             switch (event.keyCode) {
             case KEY_LEFT:
-                x = cannon.dstX - cannon_step;
+                x = cannon.dstX - cannon.step;
                 break;
             case KEY_RIGHT:
-                x = cannon.dstX + cannon_step;
+                x = cannon.dstX + cannon.step;
                 break;
             case KEY_SPACE:
                 fire();
@@ -135,15 +107,9 @@
         },
 
         hitAlien = function (alien) {
-            var blast = Object.create(sprite);
-            blast = alien;
-            blast.srcX = 2 * 32;
-            blast.showTicks = 5;
-            blast.onTick = function () {
-                if (--blast.showTicks === 0) {
-                    remove(blasts, blast);
-                }
-            };
+            var blast = Object.create(blastBase);
+            blast.dstX = alien.dstX;
+            blast.dstY = alien.dstY;
             blasts.push(blast);
         },
 
@@ -196,6 +162,7 @@
             cannon.height = 32;
             cannon.dstX = Math.floor((stage.width - cannon.width) / 2);
             cannon.dstY = stage.height - cannon.height;
+            cannon.step = 16;
 
             // Add keydown listener
             window.addEventListener("keydown", onKeyDown, false);
@@ -205,6 +172,49 @@
 
             render();
         };
+
+    // Setup missile base object
+    missileBase.srcX = 3 * 32;
+    missileBase.srcY = 0;
+    missileBase.width = 16;
+    missileBase.height = 16;
+    missileBase.onTick = function () {
+        var vTicks = 2, step = 16;
+        if (refreshTickCount % vTicks === 0) {
+            this.dstY -= step;
+            // Out of boundry                    
+            if (this.dstY < 0) {
+                remove(missiles, this);
+            }
+        }
+    };
+
+    alienBase.srcX = 32;
+    alienBase.srcY = 0;
+    alienBase.width = 32;
+    alienBase.height = 32;
+    alienBase.dstY = 0;
+    alienBase.onTick = function () {
+        var step = 16, vTicks = 2;
+        if (refreshTickCount % vTicks === 0) {
+            this.dstY += step;
+            // Out of boundry
+            if (this.dstY > stage.height) {
+                remove(aliens, this);
+            }
+        }
+    };
+
+    blastBase.srcX = 2 * 32;
+    blastBase.srcY = 0;
+    blastBase.width = 32;
+    blastBase.height = 32;
+    blastBase.showTicks = 5;
+    blastBase.onTick = function () {
+        if (--this.showTicks === 0) {
+            remove(blasts, this);
+        }
+    };
 
     tile.addEventListener("load", onTileLoaded, false);
     tile.src = "alienArmada.png";
