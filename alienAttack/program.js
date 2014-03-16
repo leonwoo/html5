@@ -10,6 +10,12 @@
             dstY: 0,
             width: 0,
             height: 0,
+            dstCenterX: function () {
+                return this.dstX + Math.floor(this.width / 2);
+            },
+            dstCenterY: function () {
+                return this.dstY + Math.floor(this.height / 2);
+            },
             dstB : function () {
                 return this.dstY + this.height;
             },
@@ -20,6 +26,8 @@
         background = Object.create(sprite),
         cannon = Object.create(sprite),
         blasts = [],
+        beamBase = Object.create(sprite),
+        beams = [],
         missileBase = Object.create(sprite),
         missiles = [],
         alienBase = Object.create(sprite),
@@ -72,6 +80,10 @@
             for (i = 0; i < missiles.length; i++) {
                 drawSprite(missiles[i]);
             }
+
+            for (i = 0; i < beams.length; i++) {
+                drawSprite(beams[i]);
+            }
         },
 
         fire = function () {
@@ -113,6 +125,12 @@
             blasts.push(blast);
         },
 
+        endGame = function () {
+            window.removeEventListener("keydown", onKeyDown, false);
+            window.clearInterval(refreshTimer);
+            info.innerHTML = "End Game";
+        },
+
         onUpdateDisplay = function () {
             var i, j;
             if (refreshTickCount % alienEnterTicks === 0) {
@@ -132,6 +150,9 @@
                 missiles[i].onTick();
             }
 
+            for (i = 0; i < beams.length; i++) {
+                beams[i].onTick();
+            }
 
             for (i = missiles.length - 1; i >= 0; i--) {
                 for (j = aliens.length - 1; j >= 0; j--) {
@@ -142,6 +163,18 @@
                         missiles.splice(i, 1);
                         break;
                     }
+                }
+            }
+
+            for (i = 0; i < aliens.length; i++) {
+                if (detectCollision(aliens[i], cannon)) {            
+                    endGame();
+                }
+            }
+
+            for (i = 0; i < beams.length; i++) {
+                if (detectCollision(beams[i], cannon)) {
+                    endGame();
                 }
             }
 
@@ -194,14 +227,26 @@
     alienBase.width = 32;
     alienBase.height = 32;
     alienBase.dstY = 0;
+    alienBase.attack = function () {
+        var beam = Object.create(beamBase);
+        beam.dstX = this.dstX + Math.floor(this.width / 2) - Math.floor(beam.width / 2);
+        beam.dstY = this.dstY + this.height;
+        beam.angle = Math.atan2(cannon.dstCenterY() - beam.dstCenterY(), cannon.dstCenterX() - beam.dstCenterX());
+        beams.push(beam);
+    };
+
     alienBase.onTick = function () {
-        var step = 16, vTicks = 2;
+        var step = 8, vTicks = 2, attackTick = 24;
         if (refreshTickCount % vTicks === 0) {
             this.dstY += step;
             // Out of boundry
             if (this.dstY > stage.height) {
                 remove(aliens, this);
             }
+        }
+
+        if (refreshTickCount % attackTick === 0) {
+            this.attack();
         }
     };
 
@@ -213,6 +258,26 @@
     blastBase.onTick = function () {
         if (--this.showTicks === 0) {
             remove(blasts, this);
+        }
+    };
+
+    beamBase.srcX = 3 * 32;
+    beamBase.srcY = 16;
+    beamBase.width = 16;
+    beamBase.height = 16;
+    beamBase.angle = Math.PI / 2;
+    beamBase.onTick = function () {
+        var step = 8, vTicks = 1, x, y;
+        if (refreshTickCount % vTicks === 0) {
+            x = this.dstX + Math.floor(step * Math.cos(this.angle));
+            y = this.dstY + Math.floor(step * Math.sin(this.angle));
+            // Out of boundry
+            if (x + this.width < 0 || x > stage.width || y + this.height < 0 || y > stage.height) {
+                remove(beams, this);
+                return;
+            }
+            this.dstX = x;
+            this.dstY = y;
         }
     };
 
