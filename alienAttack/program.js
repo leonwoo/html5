@@ -36,10 +36,10 @@
         KEY_SPACE = 32,
         KEY_LEFT = 37,
         KEY_RIGHT = 39,
-        refreshInterval = 120,
+        refreshInterval = 20,
         refreshTimer,
         refreshTickCount = 0,
-        alienEnterTicks = 20,
+        alienEnterTicks = 120,
         score = 0,
 
         remove = function (arr, item) {
@@ -95,22 +95,28 @@
             missiles.unshift(missile);
         },
 
-        onKeyDown = function (event) {
-            var x;
+        onKeyUp = function (event) {
             switch (event.keyCode) {
             case KEY_LEFT:
-                x = cannon.dstX - cannon.step;
+                cannon.moveLeft = false;
                 break;
             case KEY_RIGHT:
-                x = cannon.dstX + cannon.step;
+                cannon.moveRight = false;
+                break;
+            }
+        },
+
+        onKeyDown = function (event) {
+            switch (event.keyCode) {
+            case KEY_LEFT:
+                cannon.moveLeft = true;
+                break;
+            case KEY_RIGHT:
+                cannon.moveRight = true;
                 break;
             case KEY_SPACE:
                 fire();
                 break;
-            }
-
-            if (x >= 0 && x <= stage.width - cannon.width) {
-                cannon.dstX = x;
             }
         },
 
@@ -127,12 +133,24 @@
 
         endGame = function () {
             window.removeEventListener("keydown", onKeyDown, false);
+            window.removeEventListener("keyup", onKeyUp, false);
             window.clearInterval(refreshTimer);
             info.innerHTML = "End Game";
         },
 
         onUpdateDisplay = function () {
-            var i, j;
+            var i, j, x;
+
+            if (cannon.moveLeft && !cannon.moveRight) {
+                x = cannon.dstX - cannon.step;
+            } else if (!cannon.moveLeft && cannon.moveRight) {
+                x = cannon.dstX + cannon.step;
+            }
+
+            if (x >= 0 && x <= stage.width - cannon.width) {
+                cannon.dstX = x;
+            }
+
             if (refreshTickCount % alienEnterTicks === 0) {
                 generateAlien();
             }
@@ -167,7 +185,7 @@
             }
 
             for (i = 0; i < aliens.length; i++) {
-                if (detectCollision(aliens[i], cannon)) {            
+                if (detectCollision(aliens[i], cannon)) {
                     endGame();
                 }
             }
@@ -195,10 +213,15 @@
             cannon.height = 32;
             cannon.dstX = Math.floor((stage.width - cannon.width) / 2);
             cannon.dstY = stage.height - cannon.height;
-            cannon.step = 16;
+            cannon.step = 8;
+
+            cannon.moveLeft = false;
+            cannon.moveRight = false;
 
             // Add keydown listener
             window.addEventListener("keydown", onKeyDown, false);
+            // Add keyup listener
+            window.addEventListener("keyup", onKeyUp, false);
 
             // Add update display timer
             refreshTimer = window.setInterval(onUpdateDisplay, refreshInterval);
@@ -212,7 +235,7 @@
     missileBase.width = 16;
     missileBase.height = 16;
     missileBase.onTick = function () {
-        var vTicks = 2, step = 16;
+        var vTicks = 8, step = 16;
         if (refreshTickCount % vTicks === 0) {
             this.dstY -= step;
             // Out of boundry                    
@@ -236,7 +259,7 @@
     };
 
     alienBase.onTick = function () {
-        var step = 8, vTicks = 2, attackTick = 24;
+        var step = 1, vTicks = 2, attackTick = 120;
         if (refreshTickCount % vTicks === 0) {
             this.dstY += step;
             // Out of boundry
@@ -267,7 +290,7 @@
     beamBase.height = 16;
     beamBase.angle = Math.PI / 2;
     beamBase.onTick = function () {
-        var step = 8, vTicks = 1, x, y;
+        var step = 8, vTicks = 6, x, y;
         if (refreshTickCount % vTicks === 0) {
             x = this.dstX + Math.floor(step * Math.cos(this.angle));
             y = this.dstY + Math.floor(step * Math.sin(this.angle));
