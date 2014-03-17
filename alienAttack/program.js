@@ -36,6 +36,8 @@
         KEY_SPACE = 32,
         KEY_LEFT = 37,
         KEY_RIGHT = 39,
+        KEY_UP = 38,
+        KEY_DOWN = 40,
         refreshInterval = 20,
         refreshTimer,
         refreshTickCount = 0,
@@ -103,6 +105,12 @@
             case KEY_RIGHT:
                 cannon.moveRight = false;
                 break;
+            case KEY_UP:
+                cannon.moveUp = false;
+                break;
+            case KEY_DOWN:
+                cannon.moveDown = false;
+                break;
             }
         },
 
@@ -113,6 +121,12 @@
                 break;
             case KEY_RIGHT:
                 cannon.moveRight = true;
+                break;
+            case KEY_UP:
+                cannon.moveUp = true;
+                break;
+            case KEY_DOWN:
+                cannon.moveDown = true;
                 break;
             case KEY_SPACE:
                 fire();
@@ -139,17 +153,9 @@
         },
 
         onUpdateDisplay = function () {
-            var i, j, x;
+            var i, j;
 
-            if (cannon.moveLeft && !cannon.moveRight) {
-                x = cannon.dstX - cannon.step;
-            } else if (!cannon.moveLeft && cannon.moveRight) {
-                x = cannon.dstX + cannon.step;
-            }
-
-            if (x >= 0 && x <= stage.width - cannon.width) {
-                cannon.dstX = x;
-            }
+            cannon.onTick();
 
             if (refreshTickCount % alienEnterTicks === 0) {
                 generateAlien();
@@ -217,6 +223,30 @@
 
             cannon.moveLeft = false;
             cannon.moveRight = false;
+            cannon.moveUp = false;
+            cannon.moveDown = false;
+
+            cannon.onTick = function () {
+                var x = cannon.dstX, y = cannon.dstY;
+                if (cannon.moveLeft && !cannon.moveRight) {
+                    x -= cannon.step;
+                } else if (!cannon.moveLeft && cannon.moveRight) {
+                    x += cannon.step;
+                }
+                if (x >= 0 && x <= stage.width - cannon.width) {
+                    cannon.dstX = x;
+                }
+
+                if (cannon.moveUp && !cannon.moveDown) {
+                    y -= cannon.step;
+                } else if (!cannon.moveUp && cannon.moveDown) {
+                    y += cannon.step;
+                }
+
+                if (y >= 0 && y <= stage.height - cannon.height) {
+                    cannon.dstY = y;
+                }
+            };
 
             // Add keydown listener
             window.addEventListener("keydown", onKeyDown, false);
